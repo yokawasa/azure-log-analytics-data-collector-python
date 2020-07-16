@@ -4,6 +4,7 @@ import datetime
 import hashlib
 import hmac
 import base64
+import re
 import simplejson as json
 
 """
@@ -44,12 +45,15 @@ class DataCollectorAPIClient:
     def __rfc1123date(self):
         return datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 
+    def is_valid_log_type(self, s):
+        return True if ( re.match(r'^[a-zA-Z0-9_]+$', s) and len(s) <=100 ) else False
+
     # Build and send a request to the POST API
     def post_data(self, log_type, json_records, record_timestamp=''):
-        # Check if string contains other than alpha characters
-        if not log_type.isalpha():
+        # Check if string only contains alpha numeric and _, and not exceed 100 chars
+        if not self.is_valid_log_type(log_type):
             raise Exception(
-                "ERROR: log_type supports only alpha characters: {}".format(log_type))
+                "ERROR: log_type must only contain alpha numeric and _, and not exceed 100 chars: {}".format(log_type))
 
         body = json.dumps(json_records)
         rfc1123date = self.__rfc1123date()
