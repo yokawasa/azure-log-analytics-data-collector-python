@@ -26,9 +26,10 @@ class DataCollectorAPIClient:
     Azure Log Analytics Data Collector API Client Class
     """
 
-    def __init__(self, customer_id, shared_key): 
+    def __init__(self, customer_id, shared_key, endpoint='ods.opinsights.azure.com'):
         self.customer_id = customer_id
         self.shared_key = shared_key
+        self.endpoint = endpoint
 
     # Build the API signature
     def __signature(self, date, content_length):
@@ -45,13 +46,13 @@ class DataCollectorAPIClient:
     def __rfc1123date(self):
         return datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 
-    def is_valid_log_type(self, s):
+    def __is_valid_log_type(self, s):
         return True if ( re.match(r'^[a-zA-Z0-9_]+$', s) and len(s) <=100 ) else False
 
     # Build and send a request to the POST API
     def post_data(self, log_type, json_records, record_timestamp=''):
         # Check if string only contains alpha numeric and _, and not exceed 100 chars
-        if not self.is_valid_log_type(log_type):
+        if not self.__is_valid_log_type(log_type):
             raise Exception(
                 "ERROR: log_type must only contain alpha numeric and _, and not exceed 100 chars: {}".format(log_type))
 
@@ -59,8 +60,10 @@ class DataCollectorAPIClient:
         rfc1123date = self.__rfc1123date()
         content_length = len(body)
         signature = self.__signature(rfc1123date, content_length)
-        uri = "https://{}.ods.opinsights.azure.com/api/logs?api-version={}".format(
-                    self.customer_id, _LOG_ANALYTICS_DATA_COLLECTOR_API_VERSION)
+        uri = "https://{}.{}/api/logs?api-version={}".format(
+                    self.customer_id,
+                    self.endpoint,
+                    _LOG_ANALYTICS_DATA_COLLECTOR_API_VERSION)
 
         """
         time-generated-field

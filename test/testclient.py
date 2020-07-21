@@ -40,8 +40,11 @@ def main():
             "agent":"Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0"
         })
 
-    api = client.DataCollectorAPIClient(customer_id,shared_key)   
+    endpoint = 'ods.opinsights.azure.com'
+    api = client.DataCollectorAPIClient(customer_id, shared_key)   
+    api = client.DataCollectorAPIClient(customer_id, shared_key, endpoint)   
     response = api.post_data(log_type, json_records)
+
     if (helper.is_success(response.status_code)):
         print( 'Succeeded in posting data to Data Collector API!!')
     else:
